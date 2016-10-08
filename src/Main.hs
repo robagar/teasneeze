@@ -7,6 +7,7 @@ import qualified Graphics.Rendering.OpenGL as OpenGL
 import Graphics.Rendering.OpenGL.Util
 import Data.IORef
 
+import Camera
 import Spherical
 import State
 import DataPoints
@@ -19,7 +20,7 @@ main = do
     b <- prepareRenderOutlineBox
     dps <- require <$> loadData "test/digits/digits_tsne.json"
     dprs <- prepareRenderDataPoints dps
-    st <- newIORef $ AppState 2 0 0
+    st <- newIORef $ AppState 2 (pi/2) 0
 
     keyboardMouseCallback $= Just (onKeyMouse st)
 
@@ -49,11 +50,9 @@ initRenderWindow title = do
             WithDepthBuffer
         ]
 
-    initialWindowSize      $= Size 640 480
+    initialWindowSize      $= Size 800 600
 
     w <- createWindow title
-
-    --keyboardUpCallback $= Just quitOnEsc
 
     return w
     
@@ -73,10 +72,10 @@ onKeyMouse st key Down _ _ = do
     let (d, phi, theta) = cameraSphericalPosition cst
 
     let cst' = case key of
-                    (Char 'z') -> cst { cameraDistance = d * 1.1 } 
-                    (Char 'a') -> cst { cameraDistance = d * 0.9 } 
-                    (SpecialKey KeyDown) -> cst { cameraTheta = theta + 0.1 } 
-                    (SpecialKey KeyUp) -> cst { cameraTheta = theta - 0.1 } 
+                    (Char 'z') -> cst { cameraDistance = min 3 (d * 1.1) } 
+                    (Char 'a') -> cst { cameraDistance = max 0.1 (d * 0.9) } 
+                    (SpecialKey KeyDown) -> cst { cameraTheta = theta - 0.1 } 
+                    (SpecialKey KeyUp) -> cst { cameraTheta = theta + 0.1 } 
                     (SpecialKey KeyLeft) -> cst { cameraPhi = phi + 0.1 } 
                     (SpecialKey KeyRight) -> cst { cameraPhi = phi - 0.1 } 
                     _ -> cst 
@@ -91,6 +90,7 @@ renderLoop w st rs = do
     reshapeCallback $= Just reshape
     displayCallback $= render w st rs
     depthFunc $= Just Less
+    clearColor $= Color4 0 0.1 0.2 1
     mainLoop
     postRedisplay $ Just w
 
@@ -119,7 +119,7 @@ render w st rs = do
 
     let (x, y, z) = sphericalToCartesian (cameraDistance cst) (cameraPhi cst) (cameraTheta cst)
 
-    lookEyeAt x y z 0 0 (0 :: GLfloat)
+    cameraLookAt x y z 0 0 (0 :: GLfloat)
 
     sequence_ rs
 
@@ -127,24 +127,3 @@ render w st rs = do
     flush
     swapBuffers
 
-    -- postRedisplay $ Just w
-
-
-lookEyeAt :: Real a => a -> a -> a -> a -> a -> a -> IO ()
-lookEyeAt ex ey ez ax ay az = OpenGL.lookAt
-    (Vertex3 (f ex) (f ey) (f ez))
-    (Vertex3 (f ax) (f ay) (f az)) 
-    (Vector3 0 1 0)
-    where f = realToFrac
-
-tanDeg :: Floating a => a -> a
-tanDeg = tan.deg2rad
-
-atanDeg :: Floating a => a -> a
-atanDeg = rad2deg.atan
-
-rad2deg :: Floating a => a -> a 
-rad2deg = (180*).(/pi)
-
-deg2rad :: Floating a => a -> a 
-deg2rad =  (pi*).(/180)
