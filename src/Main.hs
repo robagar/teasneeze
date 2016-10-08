@@ -18,10 +18,10 @@ import Util
 main :: IO ()
 main = do
     opts <- teasneezeOpts
-    w <- initRenderWindow "Tea Sneeze"
+    ds <- require <$> loadDataSet (inputDataFilePath opts)
+    w <- initRenderWindow $ "Tea Sneeze - " ++ (dsName ds)
     b <- prepareRenderOutlineBox
-    dps <- require <$> loadData (inputDataFilePath opts)
-    dprs <- prepareRenderDataPoints dps
+    dprs <- prepareRenderDataPoints $ dsDataPoints ds
     st <- newIORef $ AppState 2 (pi/2) 0
 
     keyboardMouseCallback $= Just (onKeyMouse st)

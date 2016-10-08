@@ -7,15 +7,18 @@ import System.FilePath
 import qualified Data.ByteString.Lazy as BL
 import Data.Aeson
 
-import DataPoints (DataPoint (..))
+import DataPoints (
+        DataSet (..),
+        DataPoint (..)
+    )
 
 
-loadData :: FilePath -> IO (Either String [DataPoint])
-loadData f = do 
-    erd <- loadRawData f
-    return $ rawDataToDataPoints (takeDirectory f) <$> erd
+loadDataSet :: FilePath -> IO (Either String DataSet)
+loadDataSet f = do 
+    dsi <- loadDataSetInfo f
+    return $ makeDataSet (takeDirectory f) <$> dsi
 
-data RawDataResult = RawDataResult {
+data DataPointInfo = DataPointInfo {
         classification :: String,
         image_path :: String,
         x :: Float,
@@ -23,16 +26,16 @@ data RawDataResult = RawDataResult {
         z :: Float
     } deriving (Generic, FromJSON)
 
-data RawData = RawData {
+data DataSetInfo = DataSetInfo {
         name :: String,
-        results :: [RawDataResult]
+        data_points :: [DataPointInfo]
     } deriving (Generic, FromJSON)
 
-loadRawData :: FilePath -> IO (Either String RawData) 
-loadRawData f = do
-    rd <- BL.readFile f
-    return $ eitherDecode rd
+loadDataSetInfo :: FilePath -> IO (Either String DataSetInfo) 
+loadDataSetInfo f = do
+    s <- BL.readFile f
+    return $ eitherDecode s
 
-rawDataToDataPoints :: FilePath -> RawData -> [DataPoint]
-rawDataToDataPoints dir rd = map dp (results rd)
+makeDataSet :: FilePath -> DataSetInfo -> DataSet
+makeDataSet dir dsi = DataSet (name dsi) (map dp (data_points dsi))
     where dp r = DataPoint (x r, y r, z r) (dir </> image_path r)

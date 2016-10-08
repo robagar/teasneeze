@@ -7,6 +7,11 @@ import System.Random
 
 import Util
 
+data DataSet = DataSet {
+    dsName :: String,
+    dsDataPoints :: [DataPoint]
+}
+
 data DataPoint = DataPoint {
     dpPosition :: (Float, Float, Float),
     dpImage :: String
@@ -32,7 +37,7 @@ prepareRenderDataPoint p m dp = do
         renderMesh m
     (x, y, z) = dpPosition dp
     s = 0.05 :: GLfloat
-    
+
 datapointMesh :: IO Mesh
 datapointMesh = createMesh vps tis (Just ts) Nothing []
     where vps = [ -0.5,  0.5, 0.0, 

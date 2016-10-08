@@ -21,7 +21,7 @@ def make_result(tr):
     t,r = tr
     i = next(counters[t])
     return {
-        'class': str(t),
+        'classification': str(t),
         'image_path': 'images/{0}/{0}-{1}.png'.format(t,i),
         'x': float(r[0]), 
         'y': float(r[1]),
@@ -30,7 +30,7 @@ def make_result(tr):
 
 out = {
     'name': 'digits',
-    'results': list(map(make_result, zip(digits.target, rs)))
+    'data_points': list(map(make_result, zip(digits.target, rs)))
 }    
 
 with open('digits_tsne.json', 'w') as f:
