@@ -15,7 +15,8 @@ cabal-version:       >=1.10
 executable tea-sneeze
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       Camera
+  other-modules:       Opts
+                       Camera
                        DataPoints
                        LoadData
                        Spherical
@@ -31,4 +32,5 @@ executable tea-sneeze
                        random,
                        filepath,
                        bytestring,
-                       aeson
+                       aeson,
+                       optparse-applicative

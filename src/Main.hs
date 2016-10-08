@@ -7,6 +7,7 @@ import qualified Graphics.Rendering.OpenGL as OpenGL
 import Graphics.Rendering.OpenGL.Util
 import Data.IORef
 
+import Opts
 import Camera
 import Spherical
 import State
@@ -16,9 +17,10 @@ import Util
 
 main :: IO ()
 main = do
+    opts <- teasneezeOpts
     w <- initRenderWindow "Tea Sneeze"
     b <- prepareRenderOutlineBox
-    dps <- require <$> loadData "test/digits/digits_tsne.json"
+    dps <- require <$> loadData (inputDataFilePath opts)
     dprs <- prepareRenderDataPoints dps
     st <- newIORef $ AppState 2 (pi/2) 0
 
