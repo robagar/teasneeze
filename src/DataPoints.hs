@@ -6,6 +6,7 @@ import Graphics.Rendering.OpenGL.Util
 import System.Random
 
 import Util
+import State
 
 data DataSet = DataSet {
     dsName :: String,
@@ -17,26 +18,27 @@ data DataPoint = DataPoint {
     dpImage :: String
 }
 
-prepareRenderDataPoints :: [DataPoint] -> IO [IO ()]
+prepareRenderDataPoints :: [DataPoint] -> IO [AppState -> IO ()]
 prepareRenderDataPoints dps = do
     --p <- require <$> loadProgram "shaders/billboard.vs" "shaders/texture.fs"
     p <- require <$> loadProgram "shaders/basic_model_view_projection.vs" "shaders/texture.fs"
     m <- datapointMesh
     mapM (prepareRenderDataPoint p m) dps
 
-prepareRenderDataPoint :: Program -> Mesh -> DataPoint -> IO (IO ())
+prepareRenderDataPoint :: Program -> Mesh -> DataPoint -> IO (AppState -> IO ())
 prepareRenderDataPoint p m dp = do 
     t <- require <$> loadPNGTexture (dpImage dp)
     return $ render t
     where
-    render t = preservingMatrix $ do
+    render t cst = preservingMatrix $ do
         currentProgram $= Just p
         setSamplers p [ Sampler "tex" (imgObject t) ]
         translate $ Vector3 (x - 0.5) (y - 0.5) (z - 0.5)
+        let s = realToFrac (dataPointScale cst) * 0.05 :: GLfloat
         scale s s s
         renderMesh m
     (x, y, z) = dpPosition dp
-    s = 0.05 :: GLfloat
+    
 
 datapointMesh :: IO Mesh
 datapointMesh = createMesh vps tis (Just ts) Nothing []

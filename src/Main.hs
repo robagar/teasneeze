@@ -22,18 +22,18 @@ main = do
     w <- initRenderWindow $ "Tea Sneeze - " ++ (dsName ds)
     b <- prepareRenderOutlineBox
     dprs <- prepareRenderDataPoints $ dsDataPoints ds
-    st <- newIORef $ AppState 2 (pi/2) 0
+    st <- newIORef $ AppState 2 (pi/2) 0 1
 
     keyboardMouseCallback $= Just (onKeyMouse st)
 
     renderLoop w st ([b] ++ dprs) 
 
-prepareRenderOutlineBox :: IO (IO ())
+prepareRenderOutlineBox :: IO (AppState -> IO ())
 prepareRenderOutlineBox = do
     p <- require <$> loadProgram "shaders/basic_model_view_projection.vs" "shaders/flat_green.fs"
     return $ render p
     where
-    render p = preservingMatrix $ do
+    render p _ = preservingMatrix $ do
         currentProgram $= Just p
         renderObject Wireframe (Cube 1)     
 
@@ -73,6 +73,7 @@ onKeyMouse st key Down _ _ = do
     --putStrLn $ "key down: " ++ show key
     cst <- readIORef st
     let (d, phi, theta) = cameraSphericalPosition cst
+        dps = dataPointScale cst
 
     let cst' = case key of
                     (Char 'z') -> cst { cameraDistance = min 3 (d * 1.1) } 
@@ -80,7 +81,9 @@ onKeyMouse st key Down _ _ = do
                     (SpecialKey KeyDown) -> cst { cameraTheta = theta - 0.1 } 
                     (SpecialKey KeyUp) -> cst { cameraTheta = theta + 0.1 } 
                     (SpecialKey KeyLeft) -> cst { cameraPhi = phi + 0.1 } 
-                    (SpecialKey KeyRight) -> cst { cameraPhi = phi - 0.1 } 
+                    (SpecialKey KeyRight) -> cst { cameraPhi = phi - 0.1 }
+                    (Char '-') -> cst { dataPointScale = max 0.1 (dps * 0.9) }   
+                    (Char '=') -> cst { dataPointScale = min 10 (dps * 1.1) }   
                     _ -> cst 
 
     --putStrLn $ "camera distance: " ++ show (cameraDistance cst) ++ " -> " ++ show (cameraDistance cst')
@@ -88,7 +91,7 @@ onKeyMouse st key Down _ _ = do
     postRedisplay Nothing 
 onKeyMouse _ _ _ _ _ = return ()
 
-renderLoop :: Window -> IORef AppState -> [IO ()] -> IO ()
+renderLoop :: Window -> IORef AppState -> [AppState -> IO ()] -> IO ()
 renderLoop w st rs = do
     reshapeCallback $= Just reshape
     displayCallback $= render w st rs
@@ -101,7 +104,7 @@ reshape :: ReshapeCallback
 reshape size = do 
   viewport $= (Position 0 0, size)
 
-render :: Window -> IORef AppState -> [IO ()] -> IO ()
+render :: Window -> IORef AppState -> [AppState -> IO ()] -> IO ()
 render w st rs = do
     cst <- readIORef st
 
@@ -124,7 +127,7 @@ render w st rs = do
 
     cameraLookAt x y z 0 0 (0 :: GLfloat)
 
-    sequence_ rs
+    sequence_ $ map ($ cst) rs
 
     reportErrors
     flush

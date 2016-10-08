@@ -5,7 +5,8 @@ import Spherical
 data AppState = AppState {
         cameraDistance :: Float,
         cameraPhi :: Float,
-        cameraTheta :: Float
+        cameraTheta :: Float,
+        dataPointScale :: Float
     }
 
 cameraSphericalPosition :: AppState -> SphericalCoords
