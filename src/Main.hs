@@ -52,7 +52,8 @@ initRenderWindow title = do
             WithDepthBuffer
         ]
 
-    initialWindowSize      $= Size 800 600
+    initialWindowSize $= Size 800 600
+    --actionOnWindowClose $= MainLoopReturns
 
     w <- createWindow title
 
