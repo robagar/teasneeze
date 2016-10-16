@@ -12,6 +12,7 @@ import DataPoints (
         DataSet (..),
         DataPoint (..)
     )
+import Util
 
 
 loadDataSet :: FilePath -> IO (Either String DataSet)
@@ -38,7 +39,10 @@ loadDataSetInfo f = do
     return $ eitherDecode s
 
 makeDataSet :: FilePath -> DataSetInfo -> DataSet
-makeDataSet dir dsi = DataSet n (map dp (data_points dsi))
+makeDataSet dir dsi = DataSet n (map dp dps) (Just (map p dps))
     where
-        n = fromMaybe "(unnamed)" (name dsi) 
-        dp r = DataPoint (x r, y r, z r) (dir </> image_path r)
+        n = fromMaybe "(unnamed)" (name dsi)
+        dps = data_points dsi 
+        dp r = DataPoint (dir </> image_path r)
+        p r = Vec3 (x r, y r, z r)
+

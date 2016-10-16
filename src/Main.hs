@@ -1,11 +1,12 @@
 module Main where
 
 import System.Exit (exitSuccess)
-import Control.Monad (forever, when)
+import Control.Monad (forever, when, liftM)
 import Graphics.UI.GLUT
 import qualified Graphics.Rendering.OpenGL as OpenGL
 import Graphics.Rendering.OpenGL.Util
 import Data.IORef
+import Data.Maybe (fromMaybe)
 
 import Opts
 import Camera
@@ -25,8 +26,12 @@ main = do
     st <- newIORef $ AppState 2 (pi/2) 0 1
 
     keyboardMouseCallback $= Just (onKeyMouse st)
-
-    renderLoop w st ([b] ++ dprs) 
+    reshapeCallback $= Just reshape
+    displayCallback $= render w st (return $ fromMaybe [] (dsPositions ds)) b dprs
+    depthFunc $= Just Less
+    clearColor $= Color4 0 0.1 0.2 1
+    postRedisplay $ Just w
+    mainLoop
 
 prepareRenderOutlineBox :: IO (AppState -> IO ())
 prepareRenderOutlineBox = do
@@ -91,21 +96,17 @@ onKeyMouse st key Down _ _ = do
     postRedisplay Nothing 
 onKeyMouse _ _ _ _ _ = return ()
 
-renderLoop :: Window -> IORef AppState -> [AppState -> IO ()] -> IO ()
-renderLoop w st rs = do
-    reshapeCallback $= Just reshape
-    displayCallback $= render w st rs
-    depthFunc $= Just Less
-    clearColor $= Color4 0 0.1 0.2 1
-    mainLoop
-    postRedisplay $ Just w
-
 reshape :: ReshapeCallback
 reshape size = do 
   viewport $= (Position 0 0, size)
 
-render :: Window -> IORef AppState -> [AppState -> IO ()] -> IO ()
-render w st rs = do
+render :: Window 
+       -> IORef AppState 
+       -> IO [Vec3]
+       -> (AppState -> IO ()) 
+       -> [AppState -> Vec3 -> IO ()] 
+       -> IO ()
+render w st getPositions renderOutline rs = do
     cst <- readIORef st
 
     --putStrLn $ "render, camera distance: " ++ show (cameraDistance cst)
@@ -127,7 +128,10 @@ render w st rs = do
 
     cameraLookAt x y z 0 0 (0 :: GLfloat)
 
-    sequence_ $ map ($ cst) rs
+    renderOutline cst
+
+    ps <- getPositions
+    sequence_ $ map (\(r,p) -> r cst p) (zip rs ps)
 
     reportErrors
     flush
