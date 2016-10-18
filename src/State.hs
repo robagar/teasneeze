@@ -1,12 +1,14 @@
 module State where
 
 import Spherical
+import Util
 
 data AppState = AppState {
         cameraDistance :: Float,
         cameraPhi :: Float,
         cameraTheta :: Float,
-        dataPointScale :: Float
+        dataPointScale :: Float,
+        dataPointPositions :: [Vec3]
     }
 
 cameraSphericalPosition :: AppState -> SphericalCoords

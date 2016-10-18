@@ -15,6 +15,7 @@ import State
 import DataPoints
 import LoadData
 import Util
+import TSNE
 
 main :: IO ()
 main = do
@@ -24,12 +25,15 @@ main = do
     w <- initRenderWindow $ "Tea Sneeze - " ++ (dsName ds)
     b <- prepareRenderOutlineBox
     dprs <- prepareRenderDataPoints dps
-    st <- newIORef $ AppState 2 (pi/2) 0 1
+    st <- newIORef $ AppState 2 (pi/2) 0 1 []
+
+    idle <- prepareTSNE st dps
 
     keyboardMouseCallback $= Just (onKeyMouse st)
     reshapeCallback $= Just reshape
+    idleCallback $= Just idle
     --displayCallback $= render w st (return $ fromMaybe [] (dsPositions ds)) b dprs
-    displayCallback $= render w st (initTSNE dps) b dprs
+    displayCallback $= render w st b dprs
     depthFunc $= Just Less
     clearColor $= Color4 0 0.1 0.2 1
     postRedisplay $ Just w
@@ -104,11 +108,10 @@ reshape size = do
 
 render :: Window 
        -> IORef AppState 
-       -> IO [Vec3]
        -> (AppState -> IO ()) 
        -> [AppState -> Vec3 -> IO ()] 
        -> IO ()
-render w st getPositions renderOutline rs = do
+render w st renderOutline rs = do
     cst <- readIORef st
 
     --putStrLn $ "render, camera distance: " ++ show (cameraDistance cst)
@@ -132,12 +135,10 @@ render w st getPositions renderOutline rs = do
 
     renderOutline cst
 
-    ps <- getPositions
+    let ps = dataPointPositions cst
     sequence_ $ map (\(r,p) -> r cst p) (zip rs ps)
 
     reportErrors
     flush
     swapBuffers
 
-initTSNE :: [DataPoint] -> IO [Vec3]
-initTSNE = undefined
