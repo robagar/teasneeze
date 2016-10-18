@@ -33,4 +33,6 @@ executable tea-sneeze
                        filepath,
                        bytestring,
                        aeson,
-                       optparse-applicative
+                       optparse-applicative,
+                       tsne
+                       

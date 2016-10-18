@@ -20,14 +20,16 @@ main :: IO ()
 main = do
     opts <- teasneezeOpts
     ds <- require <$> loadDataSet (inputDataFilePath opts)
+    let dps = dsDataPoints ds
     w <- initRenderWindow $ "Tea Sneeze - " ++ (dsName ds)
     b <- prepareRenderOutlineBox
-    dprs <- prepareRenderDataPoints $ dsDataPoints ds
+    dprs <- prepareRenderDataPoints dps
     st <- newIORef $ AppState 2 (pi/2) 0 1
 
     keyboardMouseCallback $= Just (onKeyMouse st)
     reshapeCallback $= Just reshape
-    displayCallback $= render w st (return $ fromMaybe [] (dsPositions ds)) b dprs
+    --displayCallback $= render w st (return $ fromMaybe [] (dsPositions ds)) b dprs
+    displayCallback $= render w st (initTSNE dps) b dprs
     depthFunc $= Just Less
     clearColor $= Color4 0 0.1 0.2 1
     postRedisplay $ Just w
@@ -137,3 +139,5 @@ render w st getPositions renderOutline rs = do
     flush
     swapBuffers
 
+initTSNE :: [DataPoint] -> IO [Vec3]
+initTSNE = undefined

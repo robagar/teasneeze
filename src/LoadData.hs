@@ -23,9 +23,10 @@ loadDataSet f = do
 data DataPointInfo = DataPointInfo {
         classification :: Maybe String,
         image_path :: String,
-        x :: Float,
-        y :: Float,
-        z :: Float
+        data_vector :: [Float]
+        --x :: Float,
+        --y :: Float,
+        --z :: Float
     } deriving (Generic, FromJSON)
 
 data DataSetInfo = DataSetInfo {
@@ -39,10 +40,10 @@ loadDataSetInfo f = do
     return $ eitherDecode s
 
 makeDataSet :: FilePath -> DataSetInfo -> DataSet
-makeDataSet dir dsi = DataSet n (map dp dps) (Just (map p dps))
+makeDataSet dir dsi = DataSet n (map dp dps)  Nothing -- (Just (map p dps))
     where
         n = fromMaybe "(unnamed)" (name dsi)
         dps = data_points dsi 
-        dp r = DataPoint (dir </> image_path r)
-        p r = Vec3 (x r, y r, z r)
+        dp r = DataPoint (dir </> image_path r) (data_vector r)
+        --p r = Vec3 (x r, y r, z r)
 
