@@ -31,7 +31,7 @@ prepareRenderDataPoint p m dp = do
     t <- require <$> loadPNGTexture (dpImage dp)
     return $ render t
     where
-    render t cst (Vec3 (x,y,z)) = preservingMatrix $ do
+    render t cst (x,y,z) = preservingMatrix $ do
         currentProgram $= Just p
         setSamplers p [ Sampler "tex" (imgObject t) ]
         translate $ Vector3 (x - 0.5) (y - 0.5) (z - 0.5)

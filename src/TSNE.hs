@@ -9,6 +9,8 @@ import Graphics.UI.GLUT (postRedisplay)
 import Control.Monad (when, forever)
 import Data.Maybe (isJust)
 
+import Data.Algorithm.TSNE
+
 import Util
 import State
 import DataPoints
@@ -31,9 +33,13 @@ renderOnTSNE st v = do
 
 runTSNE :: MVar [Vec3] -> [DataPoint] -> IO ()
 runTSNE v dps = do 
-    pss <- tsne (map dpData dps) 
+    pss <- tsne 30 10 (map dpData dps) 
     forever $ do
-        putMVar v $ head pss
+        putMVar v $ (normalize.head) pss
 
-tsne :: [[Float]] -> IO [[Vec3]]
-tsne _ = undefined
+normalize :: [Vec3] -> [Vec3]
+normalize vs = zip3 (n xs) (n ys) (n zs)
+    where
+        (xs,ys,zs) = unzip3 vs
+        n l = map ((/(maximum l - minimum l)).(subtract (minimum l))) l
+

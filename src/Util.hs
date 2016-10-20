@@ -1,6 +1,6 @@
 module Util where
 
-data Vec3 = Vec3 (Float,Float,Float)
+type Vec3 = (Float,Float,Float)
 
 require :: Either String a -> a
 require (Left  e) = error e

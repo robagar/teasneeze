@@ -35,5 +35,6 @@ executable tea-sneeze
                        bytestring,
                        aeson,
                        optparse-applicative,
-                       tsne
+                       tsne,
+                       normaldistribution
                        
