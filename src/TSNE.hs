@@ -33,9 +33,14 @@ renderOnTSNE st v = do
 
 runTSNE :: MVar [Vec3] -> [DataPoint] -> IO ()
 runTSNE v dps = do 
-    pss <- tsne 30 10 (map dpData dps) 
-    forever $ do
-        putMVar v $ (normalize.head) pss
+    ts <- tsne def (map dpData dps)
+    consumeTSNEOutput v ts 
+
+consumeTSNEOutput :: MVar [Vec3] -> [TSNEOutput3D] -> IO ()
+consumeTSNEOutput v (t:ts) = do
+    putStrLn $ "tSNE iteration " ++ show (tsneIteration t)
+    putMVar v $ (normalize.tsneSolution3D) t
+    consumeTSNEOutput v ts
 
 normalize :: [Vec3] -> [Vec3]
 normalize vs = zip3 (n xs) (n ys) (n zs)
