@@ -2,6 +2,7 @@ module TSNE (
         prepareTSNE
     ) where
 
+import Data.Default (def)
 import Data.IORef
 import Control.Concurrent
 import Control.Concurrent.MVar
