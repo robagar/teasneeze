@@ -38,13 +38,19 @@ runTSNE v dps = do
 
 consumeTSNEOutput :: MVar [Vec3] -> [TSNEOutput3D] -> IO ()
 consumeTSNEOutput v (t:ts) = do
-    putStrLn $ "tSNE iteration " ++ show (tsneIteration t)
-    putMVar v $ (normalize.tsneSolution3D) t
+    putStrLn $ "tSNE iteration " ++ show (tsneIteration t) ++ ", cost " ++ show (tsneCost t)
+    putStrLn $ show (tsneSolution3D t !! 0)
+    let s = ((map toVec3).normalize.tsneSolution3D) t
+    putStrLn $ show (s !! 0)
+    putMVar v s
     consumeTSNEOutput v ts
 
-normalize :: [Vec3] -> [Vec3]
+normalize :: (Floating a, Ord a) => [(a,a,a)] -> [(a,a,a)]
 normalize vs = zip3 (n xs) (n ys) (n zs)
     where
         (xs,ys,zs) = unzip3 vs
         n l = map ((/(maximum l - minimum l)).(subtract (minimum l))) l
+
+toVec3 :: Real a => (a,a,a) -> Vec3
+toVec3 (x,y,z) = (realToFrac x, realToFrac y, realToFrac z)
 

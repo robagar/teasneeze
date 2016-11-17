@@ -23,7 +23,7 @@ loadDataSet f = do
 data DataPointInfo = DataPointInfo {
         classification :: Maybe String,
         image_path :: String,
-        data_vector :: [Float]
+        data_vector :: [Double]
         --x :: Float,
         --y :: Float,
         --z :: Float

@@ -16,7 +16,7 @@ data DataSet = DataSet {
 
 data DataPoint = DataPoint {
     dpImage :: String,
-    dpData :: [Float]
+    dpData :: [Double]
 }
 
 prepareRenderDataPoints :: [DataPoint] -> IO [AppState -> Vec3 -> IO ()]
