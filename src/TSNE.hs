@@ -45,6 +45,7 @@ consumeTSNEOutput v (t:ts) = do
     putStrLn $ show (s !! 0)
     putMVar v s
     consumeTSNEOutput v ts
+consumeTSNEOutput _ [] = return ()
 
 normalize :: (Floating a, Ord a) => [(a,a,a)] -> [(a,a,a)]
 normalize vs = zip3 (n xs) (n ys) (n zs)
