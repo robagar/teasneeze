@@ -36,7 +36,7 @@ renderOnTSNE st v = do
 
 runTSNE :: MVar [Vec3] -> [DataPoint] -> IO ()
 runTSNE v dps = do
-    ts <- tsne def (map dpData dps)
+    ts <- tsne3D def (map dpData dps)
     consumeTSNEOutput v ts 
 
 consumeTSNEOutput :: MVar [Vec3] -> [TSNEOutput3D] -> IO ()
