@@ -4,6 +4,7 @@ import Spherical
 import Util
 
 data AppState = AppState {
+        runningTSNE :: Bool,
         cameraDistance :: Float,
         cameraPhi :: Float,
         cameraTheta :: Float,

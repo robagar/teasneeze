@@ -25,24 +25,26 @@ prepareTSNE st dps = do
 
 renderOnTSNE :: IORef AppState -> MVar [Vec3] -> IO ()
 renderOnTSNE st v = do
-    mps <- tryTakeMVar v
-    case mps of
-        Just ps -> do
-            atomicModifyIORef st (\cst -> (cst { dataPointPositions = ps }, ()))
-            postRedisplay Nothing
-        Nothing -> return ()
+    cst <- readIORef st
+    when (runningTSNE cst) $ do
+        mps <- tryTakeMVar v
+        case mps of
+            Just ps -> do
+                atomicModifyIORef st (\cst -> (cst { dataPointPositions = ps }, ()))
+                postRedisplay Nothing
+            Nothing -> return ()
 
 runTSNE :: MVar [Vec3] -> [DataPoint] -> IO ()
-runTSNE v dps = do 
+runTSNE v dps = do
     ts <- tsne def (map dpData dps)
     consumeTSNEOutput v ts 
 
 consumeTSNEOutput :: MVar [Vec3] -> [TSNEOutput3D] -> IO ()
 consumeTSNEOutput v (t:ts) = do
-    putStrLn $ "tSNE iteration " ++ show (tsneIteration t) ++ ", cost " ++ show (tsneCost t)
-    putStrLn $ show (tsneSolution3D t !! 0)
+    --putStrLn $ "tSNE iteration " ++ show (tsneIteration t) ++ ", cost " ++ show (tsneCost t)
+    --putStrLn $ show (tsneSolution3D t !! 0)
     let s = ((map toVec3).normalize.tsneSolution3D) t
-    putStrLn $ show (s !! 0)
+    --putStrLn $ show (s !! 0)
     putMVar v s
     consumeTSNEOutput v ts
 consumeTSNEOutput _ [] = return ()

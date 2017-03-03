@@ -21,11 +21,12 @@ main :: IO ()
 main = do
     opts <- teasneezeOpts
     ds <- require <$> loadDataSet (inputDataFilePath opts)
-    let dps = dsDataPoints ds
+    putStrLn $ show $ take 20 $ map dpData (dsDataPoints ds)
+    let dps = take 100 $ dsDataPoints ds
     w <- initRenderWindow $ "Tea Sneeze - " ++ (dsName ds)
     b <- prepareRenderOutlineBox
     dprs <- prepareRenderDataPoints dps
-    st <- newIORef $ AppState 2 (pi/2) 0 1 []
+    st <- newIORef $ AppState False 2 (pi/2) 0 1 []
 
     idle <- prepareTSNE st dps
 
@@ -68,6 +69,9 @@ initRenderWindow title = do
 
     w <- createWindow title
 
+    clear [ ColorBuffer, DepthBuffer ]
+    flush
+
     return w
     
 --dumpGLUTInfo :: IO ()
@@ -81,12 +85,13 @@ quitOnEsc c _ = when (c == '\ESC') exitSuccess
 onKeyMouse :: IORef AppState -> KeyboardMouseCallback
 onKeyMouse _ (Char c) Up _ _ = when (c == '\ESC') exitSuccess
 onKeyMouse st key Down _ _ = do
-    --putStrLn $ "key down: " ++ show key
+    putStrLn $ "key down: " ++ show key
     cst <- readIORef st
     let (d, phi, theta) = cameraSphericalPosition cst
         dps = dataPointScale cst
 
     let cst' = case key of
+                    (Char ' ') -> cst { runningTSNE = not (runningTSNE cst) }
                     (Char 'z') -> cst { cameraDistance = min 3 (d * 1.1) } 
                     (Char 'a') -> cst { cameraDistance = max 0.1 (d * 0.9) } 
                     (SpecialKey KeyDown) -> cst { cameraTheta = theta - 0.1 } 
