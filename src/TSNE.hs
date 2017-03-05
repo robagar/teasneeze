@@ -9,6 +9,7 @@ import Control.Concurrent.MVar
 import Graphics.UI.GLUT (postRedisplay)
 import Control.Monad (when, forever)
 import Data.Maybe (isJust)
+import Pipes(runEffect, for, lift)
 
 import Data.Algorithm.TSNE
 
@@ -36,18 +37,13 @@ renderOnTSNE st v = do
 
 runTSNE :: MVar [Vec3] -> [DataPoint] -> IO ()
 runTSNE v dps = do
-    ts <- tsne3D def (map dpData dps)
-    consumeTSNEOutput v ts 
+    runEffect $ for (tsne3D def (map dpData dps)) $ \r -> do
+        lift $ consumeTSNEOutput v r
 
-consumeTSNEOutput :: MVar [Vec3] -> [TSNEOutput3D] -> IO ()
-consumeTSNEOutput v (t:ts) = do
-    --putStrLn $ "tSNE iteration " ++ show (tsneIteration t) ++ ", cost " ++ show (tsneCost t)
-    --putStrLn $ show (tsneSolution3D t !! 0)
+consumeTSNEOutput :: MVar [Vec3] -> TSNEOutput3D -> IO ()
+consumeTSNEOutput v t = do
     let s = ((map toVec3).normalize.tsneSolution3D) t
-    --putStrLn $ show (s !! 0)
     putMVar v s
-    consumeTSNEOutput v ts
-consumeTSNEOutput _ [] = return ()
 
 normalize :: (Floating a, Ord a) => [(a,a,a)] -> [(a,a,a)]
 normalize vs = zip3 (n xs) (n ys) (n zs)
