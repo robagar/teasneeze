@@ -38,10 +38,6 @@ renderOnTSNE st v = do
 runTSNE :: MVar [Vec3] -> [DataPoint] -> IO ()
 runTSNE v dps = forTsne3D (consumeTSNEOutput v) def $ map dpData dps
 
---runTSNE v dps = do
---    runEffect $ for (tsne3D def (map dpData dps)) $ \r -> do
---        lift $ consumeTSNEOutput v r
-
 consumeTSNEOutput :: MVar [Vec3] -> TSNEOutput3D -> IO ()
 consumeTSNEOutput v t = do
     let s = ((map toVec3).normalize.tsneSolution3D) t

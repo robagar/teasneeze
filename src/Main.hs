@@ -22,8 +22,8 @@ main = do
     opts <- teasneezeOpts
     ds <- require <$> loadDataSet (inputDataFilePath opts)
     --putStrLn $ show $ take 20 $ map dpData (dsDataPoints ds)
-    let dps = take 100 $ dsDataPoints ds
-    --let dps = dsDataPoints ds
+    let n = inputDataTake opts
+        dps = take n $ dsDataPoints ds
     w <- initRenderWindow $ "Tea Sneeze - " ++ (dsName ds)
     b <- prepareRenderOutlineBox
     dprs <- prepareRenderDataPoints dps
