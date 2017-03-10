@@ -27,7 +27,10 @@ prepareTSNE st dps = do
 renderOnTSNE :: IORef AppState -> MVar [Vec3] -> IO ()
 renderOnTSNE st v = do
     cst <- readIORef st
-    when (runningTSNE cst) $ do
+    when (initializingTSNE cst || runningTSNE cst) $ do
+        when (initializingTSNE cst) $ do
+            atomicModifyIORef st (\cst -> (cst { initializingTSNE = False }, ()))
+            
         mps <- tryTakeMVar v
         case mps of
             Just ps -> do

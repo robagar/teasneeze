@@ -27,7 +27,7 @@ main = do
     w <- initRenderWindow $ "Tea Sneeze - " ++ (dsName ds)
     b <- prepareRenderOutlineBox
     dprs <- prepareRenderDataPoints dps
-    st <- newIORef $ AppState False 2 (pi/2) 0 1 []
+    st <- newIORef $ AppState True False 2 (pi/2) 0 1 []
 
     idle <- prepareTSNE st dps
 
@@ -69,6 +69,8 @@ initRenderWindow title = do
     --actionOnWindowClose $= MainLoopReturns
 
     w <- createWindow title
+
+    fullScreen
 
     clear [ ColorBuffer, DepthBuffer ]
     flush
